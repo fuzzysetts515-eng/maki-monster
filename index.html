@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>マキちゃんのモンスターアドベンチャー</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -139,9 +139,9 @@
   .shake { animation:shake .4s;} @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
   #playerImg.shake { animation:shake .4s;}
 /* Local RPG edition: safe-area-aware play space and separate controls. */
-html,body{height:100%;overscroll-behavior:none;overflow:hidden}
+html,body{height:100%;overscroll-behavior:none;overflow:hidden;touch-action:pan-x pan-y}
 body{background:radial-gradient(ellipse at top,#233248,#10131e 70%)}
-#app{max-width:1500px;height:100vh;height:100dvh;min-height:0;padding:max(6px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:6px}
+#app{max-width:1500px;height:100vh;height:var(--game-height,100dvh);min-height:0;padding:max(6px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:6px}
 h1{font-size:clamp(11px,1.7vw,16px);margin:0}
 #journey{font-size:12px;line-height:1.45;color:#dbe9ff;background:#1c2940;border:1px solid #4b6080;border-radius:8px;padding:5px 10px;min-height:28px}
 .screen{height:100%;min-height:0;aspect-ratio:auto;border-radius:14px;box-shadow:0 5px 24px #0006}
@@ -166,7 +166,7 @@ h1{font-size:clamp(11px,1.7vw,16px);margin:0}
 #enemyImg,#playerImg{max-height:100%;max-width:100%;width:auto}
 .info-box{min-width:40%;max-width:49%}#playerInfo{top:40%}
 #resultScr{justify-content:flex-start}#resultScr h2{margin-top:18px}
-@media (orientation:landscape) and (min-width:600px){
+@media (orientation:landscape){
  #app{grid-template-columns:120px minmax(0,1fr) 120px;grid-template-rows:auto auto minmax(0,1fr);gap:5px}
  h1,#journey{grid-column:1/-1}.screen{grid-column:2;grid-row:3}
  #controls{display:contents}#dpad{grid-column:1;grid-row:3;align-self:center;width:114px;height:132px}
@@ -175,6 +175,13 @@ h1{font-size:clamp(11px,1.7vw,16px);margin:0}
  #rightBtns .bigBtn{padding:14px 6px;font-size:13px;min-height:58px}
  #titleScr{padding:8px}#titleScr h2{margin:2px;font-size:17px}#titleScr p{font-size:10px}#titleScr .bigBtn{padding:8px 12px;margin-top:5px!important}
 }
+@media (orientation:landscape) and (max-height:500px){
+ #app{grid-template-rows:auto minmax(0,1fr)}
+ h1{display:none}#journey{grid-row:1;font-size:11px}
+ .screen,#dpad,#rightBtns{grid-row:2}
+ #rightBtns{gap:8px}#rightBtns .bigBtn{min-height:48px;padding:10px 6px}
+}
+#displayBtn{background:#b6d7fb;box-shadow:0 3px 0 #627c9d;font-size:12px}
 @media (min-width:1100px) and (min-height:650px){#app{grid-template-columns:150px minmax(0,1fr) 150px}#journey{font-size:15px}.info-name{font-size:17px}.info-lv,.hp-text{font-size:13px}.cmd{font-size:16px}}
 @media (orientation:portrait) and (max-height:670px){#dpad{transform:scale(.85);transform-origin:left center;height:114px}#controls{max-height:114px}#journey{font-size:10px}.info-name{font-size:11px}#titleScr p{font-size:10px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -233,6 +240,7 @@ h1{font-size:clamp(11px,1.7vw,16px);margin:0}
     <div id="rightBtns">
       <button class="bigBtn a" id="aBtn">● けってい / はなす</button>
       <button class="bigBtn" id="menuBtn">≡ メニュー</button>
+      <button class="bigBtn" id="displayBtn" type="button">画面を広げる</button>
     </div>
   </div>
   <div class="hint">キーボード: 矢印/WASDで移動（押しっぱなしで連続移動）、Z/Enterで決定・はなす、Escでメニュー</div>
@@ -300,7 +308,7 @@ const MOVES = {
   ムーンフォース:{type:"フェアリー",power:95,acc:100,pp:10,effect:"atkDown",echance:.3,stg:1},
   じこかいふく:{type:"ノーマル",power:0,acc:100,pp:5,heal:.5,statusMove:true},
   // --- 新規 ---
-  ひかりのはどう:{type:"ノーマル",power:0,acc:100,pp:10,effect:"partyGuard",turns:3,statusMove:true},
+  ひかりのはどう:{type:"ノーマル",power:0,acc:100,pp:10,effect:"partyGuard",turns:3,statusMove:true,priority:3},
   スピードスター:{type:"ノーマル",power:60,acc:0,pp:20},           // acc:0 = 必中
   りゅうのいぶき:{type:"ドラゴン",power:90,acc:100,pp:10,effect:"para",echance:.1},
   いわおとし:{type:"いわ",power:50,acc:90,pp:15},
@@ -432,6 +440,11 @@ function moveSpeed(m){ let s=m.stats.spd*stageMult(m.stages.spd); if(m.status===
    {type:"wild"|"trainer"|"boss", name, sprite, team:[{sp,lv,moves?,iv?}],
     ally:{trainer,sp,lv,moves}, gimmick, pre, post, intro, noLose, storyWin} */
 function startBattleSpec(spec){
+  // Balance adjustments preserve the original scene text and partner.
+  if((spec.type==="wild"&&!G.flags.ch2_clear)||(spec.name==="やせいの ビリビリー"&&spec.noLose)){spec={...spec,team:spec.team.map(t=>({...t,moves:["たいあたり"]}))};}
+  if(spec.name==="カイザ船長"&&spec.team.length===1){spec={...spec,gimmick:"partnerGuard",team:[{sp:"ビリペロリ",lv:8,iv:{hp:18,atk:14,def:14,spd:10},moves:["でんきショック","たいあたり","あまえる"]}],pre:[...(spec.pre||[]),"ブラッキーが まもってくれる！ ピンチなら きずぐすりを使おう。"]};}
+  else if(spec.name==="カイザ船長"&&spec.team.length===2){spec={...spec,team:[{...spec.team[0],lv:44},{...spec.team[1],lv:48}]};}
+  if(spec.noLose&&!spec.retryBag)spec={...spec,retryBag:{...G.bag}};
   B.spec=spec;
   B.team=spec.team.map(t=>makeMon(t.sp,t.lv, t.iv||(spec.type==="boss"?{hp:28,atk:28,def:26,spd:24}:wildIVs())));
   if(spec.teamMoves){ B.team.forEach((m,i)=>{ if(spec.team[i].moves){ m.moves=spec.team[i].moves.map(nm=>({name:nm,pp:MOVES[nm].pp,maxpp:MOVES[nm].pp})); } }); }
@@ -444,7 +457,7 @@ function startBattleSpec(spec){
     B.allyTrainer=spec.ally.trainer||"なかま"; }
   beginBattle(spec.intro || (spec.type==="wild"?`あっ！ やせいの ${B.enemy.name}が とびだしてきた！`:`${spec.name}が しょうぶを しかけてきた！`), spec.pre);
 }
-function startWild(key, level){ startBattleSpec({type:"wild", team:[{sp:key,lv:level}]}); }
+function startWild(key, level){ if(G.area==="pikapika"&&!G.flags.ch3_clear)level=Math.min(level,G.flags.ch3_gen_off?14:16); if(G.area==="alumina"&&!G.flags.ch2_clear)level=Math.min(level,5);startBattleSpec({type:"wild", team:[{sp:key,lv:level}]}); }
 
 function beginBattle(intro, preLines){
   G.party.forEach(m=>{m.stages={atk:0,def:0,spd:0};m.confuse=0;});B._pending=null;
@@ -572,14 +585,14 @@ function tryRun(){
 
 function enemyAction(){
   const e=B.enemy, me=activeMon();
-  const has=nm=>e.moves.findIndex(m=>m.name===nm&&m.pp>0);
+  const has=nm=>nm==="じこかいふく"&&(e.recoveries||0)>=2?-1:e.moves.findIndex(m=>m.name===nm&&m.pp>0);
   const emit=i=>({kind:"move",moveIdx:i,side:"enemy"});
   const slower=moveSpeed(e)<moveSpeed(me);
   if(B.isBoss && e.hp<e.maxHp*0.32){ const i=has("じこかいふく"); if(i>=0&&Math.random()<0.7) return emit(i); }
   if(slower && me.status!=="par" && me.confuse<=0){ const i=has("でんじは"); if(i>=0&&Math.random()<0.75) return emit(i); }
   if(slower){ const i=has("でんこうせっか"); if(i>=0&&Math.random()<0.5) return emit(i); }
   if(me.stages.atk>-2){ const i=has("あまえる"); if(i>=0&&Math.random()<0.25) return emit(i); }
-  let pool=e.moves.map((m,i)=>({m,i})).filter(o=>o.m.pp>0);
+  let pool=e.moves.map((m,i)=>({m,i})).filter(o=>o.m.pp>0&&(!MOVES[o.m.name].heal||(e.recoveries||0)<2));
   if(!pool.length) return {kind:"struggle",side:"enemy"};
   let best=null,bs=-1;
   for(const o of pool){ const info=MOVES[o.m.name]; let sc;
@@ -658,13 +671,15 @@ function applyItem(name,idx,cb){ const it=ITEMS[name]; G.bag[name]=(G.bag[name]|
 function resolveMove(act,cb){
   const user=act.side==="player"?activeMon():B.enemy, foe=act.side==="player"?B.enemy:activeMon();
   const mvObj=user.moves[act.moveIdx], mv=MOVES[mvObj.name];
+  if(user.paraShield>0)user.paraShield--;
+  if(user.status==="par"){user.parTurns=user.parTurns??3;if(user.parTurns<=0){user.status=null;user.paraShield=2;updateInfo();}else user.parTurns--;}
   if(user.status==="par" && Math.random()<0.25){ queueMsg([`${user.name}は からだが しびれて うごけない！`], cb); return; }
   if(user.confuse>0){ user.confuse--;
     if(Math.random()<0.33){ const d=confDmg(user); user.hp=Math.max(0,user.hp-d);
       queueMsg([`${user.name}は こんらんしている…`,`わけも わからず じぶんを こうげきした！`], ()=>{ updateInfo(); flashSide(act.side==="enemy"?"enemy":"player"); cb(); }); return; } }
   mvObj.pp=Math.max(0,mvObj.pp-1);
   const nameLine=`${user.name}の ${mvObj.name}！`;
-  if(mv.heal){ queueMsg([nameLine], ()=>{ const h=Math.min(Math.floor(user.maxHp*mv.heal),user.maxHp-user.hp); user.hp+=h; updateInfo(); queueMsg([`${user.name}の HPが かいふくした！`], cb); }); return; }
+  if(mv.heal){if(act.side==="enemy")user.recoveries=(user.recoveries||0)+1; queueMsg([nameLine], ()=>{ const h=Math.min(Math.floor(user.maxHp*mv.heal),user.maxHp-user.hp); user.hp+=h; updateInfo(); queueMsg([`${user.name}の HPが かいふくした！`], cb); }); return; }
   if(mv.acc && Math.random()*100>mv.acc){ queueMsg([nameLine,`しかし ${user.name}の こうげきは はずれた！`], cb); return; }
   if(mv.statusMove){ queueMsg([nameLine], ()=>applyStatusMove(mv,user,foe,act,cb)); return; }
   queueMsg([nameLine], ()=>{
@@ -673,7 +688,7 @@ function resolveMove(act,cb){
     if(eff===0){ queueMsg([`しかし ${foe.name}には こうかが ないようだ…`], cb); return; }
     const crit=Math.random()<(mv.highCrit?0.125:0.0625);
     let dmg=calcDmg(user,foe,power,mv.type,crit);
-    if(act.side==="enemy" && B.guard>0) dmg=Math.max(1,Math.floor(dmg*0.5));  // ひかりのはどう
+    if(act.side==="enemy" && (B.guard>0||B.gimmick==="partnerGuard")) dmg=Math.max(1,Math.floor(dmg*(B.gimmick==="partnerGuard"?.4:.5)));  // partner cover / ひかりのはどう
     foe.hp=Math.max(0,foe.hp-dmg); flashSide(act.side==="enemy"?"player":"enemy"); updateInfo();
     const extra=[]; if(crit)extra.push("きゅうしょに あたった！");
     if(eff>1)extra.push("こうかは ばつぐんだ！"); else if(eff<1)extra.push("こうかは いまひとつの ようだ…");
@@ -685,7 +700,7 @@ function resolveMove(act,cb){
 }
 function applyStatusMove(mv,user,foe,act,cb){ const e=mv.effect;
   if(e==="partyGuard"){ if(act.side==="player"){ B.guard=mv.turns||3; queueMsg([`${user.name}は ひかりの かべを はった！ しばらく ダメージが はんぶんに なる！`],cb); return; } B.guard=mv.turns||3; queueMsg([`${user.name}は みを まもった！`],cb); return; }
-  if(e==="para"){ if(foe.status){ queueMsg(["しかし うまく きまらなかった…"],cb); return; } foe.status="par"; updateInfo(); queueMsg([`${foe.name}は まひして わざが でにくくなった！`],cb); return; }
+  if(e==="para"){ if(foe.status||foe.paraShield>0){ queueMsg(["しかし うまく きまらなかった…"],cb); return; } foe.status="par";foe.parTurns=3; updateInfo(); queueMsg([`${foe.name}は まひして わざが でにくくなった！`],cb); return; }
   if(e==="confuse"){ if(foe.confuse>0){ queueMsg([`${foe.name}は すでに こんらんしている！`],cb); return; } foe.confuse=randInt(2,4); queueMsg([`${foe.name}は こんらんした！`],cb); return; }
   if(e==="defDown")return stage(foe,"def",-(mv.stg||1),cb);
   if(e==="atkDown")return stage(foe,"atk",-(mv.stg||1),cb);
@@ -695,7 +710,7 @@ function applyStatusMove(mv,user,foe,act,cb){ const e=mv.effect;
 }
 function applySecondary(mv,foe,cb){ const e=mv.effect;
   if(e==="burn"){ if(foe.status||foe.types.includes("ほのお")){cb();return;} foe.status="brn"; updateInfo(); queueMsg([`${foe.name}は やけどを おった！`],cb); return; }
-  if(e==="para"){ if(foe.status){cb();return;} foe.status="par"; updateInfo(); queueMsg([`${foe.name}は まひした！`],cb); return; }
+  if(e==="para"){ if(foe.status||foe.paraShield>0){cb();return;} foe.status="par";foe.parTurns=3; updateInfo(); queueMsg([`${foe.name}は まひした！`],cb); return; }
   if(e==="defDown")return stage(foe,"def",-(mv.stg||1),cb);
   if(e==="atkDown")return stage(foe,"atk",-(mv.stg||1),cb);
   if(e==="spdDown")return stage(foe,"spd",-(mv.stg||1),cb);
@@ -780,7 +795,7 @@ function winBattle(){ B.busy=false; setMode("field"); playBGM("field"); const w=
 function onPlayerFaint(){ B.busy=false; updateInfo();
   queueMsg([`${activeMon().name}は たおれた！`], ()=>{
     if(!G.party.some(m=>m.hp>0)){
-      if(B.noLose){ reviveAll(); B.team.forEach(m=>{}); queueMsg(["でも マキちゃんは あきらめない！","なかまたち、もう いちど！"], ()=>{ const s=B.spec; startBattleSpec(s); }); return; }
+      if(B.noLose){ healParty();G.bag={...B.spec.retryBag}; B.team.forEach(m=>{}); queueMsg(["でも マキちゃんは あきらめない！","なかまたち、もう いちど！"], ()=>{ const s=B.spec; startBattleSpec(s); }); return; }
       gameOver(); return;
     }
     showSwitch(true);
@@ -980,30 +995,39 @@ function drawField(){
 }
 
 /* ---------- 移動 ---------- */
-const held=[]; let interactLock=false, motionEpoch=0;
-function pushDir(d){ if(!held.includes(d)) held.push(d); }
-function popDir(d){ const i=held.indexOf(d); if(i>=0) held.splice(i,1); if(!held.length) interactLock=false; }
-function facingTile(){ let c=player.c,r=player.r; if(player.dir==="up")r--; else if(player.dir==="down")r++; else if(player.dir==="left")c--; else c++; return {c,r}; }
-function startStep(dir){
-  const epoch=motionEpoch;
-  player.dir=dir; let nc=player.c, nr=player.r;
-  if(dir==="up")nr--; else if(dir==="down")nr++; else if(dir==="left")nc--; else nc++;
-  const ent=entityAt(nc,nr), t=tileAt(nc,nr);
-  if((ent||t==="H"||t==="@") && !interactLock){ player.frame=1; drawField(); interact(nc,nr); return; }
-  if(isSolidTile(nc,nr)||ent){ player.frame=(player.frame+1)%4; drawField(); return; }
-  player.moving=true;
-  const sx=player.c*TILE, sy=player.r*TILE, ex=nc*TILE, ey=nr*TILE;
-  player.c=nc; player.r=nr; const dur=125; let start=null;
-  function step(ts){ if(epoch!==motionEpoch)return; if(!start)start=ts; let p=Math.min(1,(ts-start)/dur);
-    player.px=sx+(ex-sx)*p; player.py=sy+(ey-sy)*p; player.frame=p<.5?1:2; drawField();
-    if(p<1) requestAnimationFrame(step);
-    else { player.px=ex; player.py=ey; player.frame=0; player.moving=false; drawField(); onEnterTile(nc,nr); } }
-  requestAnimationFrame(step);
+const held=[];let interactLock=false,motionEpoch=0,motion=null,pendingFieldMenu=false;
+const directionSources=new Map();
+function rebuildHeld(){held.splice(0,held.length,...new Set(directionSources.values()));}
+function clearDirections(){directionSources.clear();held.splice(0);interactLock=false;}
+function pushDir(d,source=d){directionSources.set(source,d);rebuildHeld();if(G.mode==="field"&&!player.moving)startStep(held[held.length-1],performance.now());}
+function popDir(d,source=d){directionSources.delete(source);rebuildHeld();if(!held.length)interactLock=false;}
+function facingTile(){let c=player.c,r=player.r;if(player.dir==="up")r--;else if(player.dir==="down")r++;else if(player.dir==="left")c--;else c++;return {c,r};}
+function startStep(dir,now){
+ if(G.mode!=="field"||player.moving||!dir)return;
+ player.dir=dir;let nc=player.c,nr=player.r;
+ if(dir==="up")nr--;else if(dir==="down")nr++;else if(dir==="left")nc--;else nc++;
+ const ent=entityAt(nc,nr),tile=tileAt(nc,nr);
+ if((ent||tile==="H"||tile==="@")&&!interactLock){drawField();interact(nc,nr);return;}
+ if(isSolidTile(nc,nr)||ent){player.frame=0;drawField();return;}
+ motion={epoch:motionEpoch,sx:player.c*TILE,sy:player.r*TILE,ex:nc*TILE,ey:nr*TILE,c:nc,r:nr,start:now??performance.now(),duration:140};
+ player.c=nc;player.r=nr;player.moving=true;
 }
-function movementLoop(){ requestAnimationFrame(movementLoop);
-  if(G.mode!=="field"||player.moving) return;
-  if(!held.length){ interactLock=false; return; }
-  startStep(held[held.length-1]); }
+function movementLoop(ts){
+ requestAnimationFrame(movementLoop);
+ if(!Number.isFinite(ts))return;
+ if(motion&&motion.epoch!==motionEpoch){motion=null;player.moving=false;pendingFieldMenu=false;}
+ if(motion){const m=motion,p=Math.max(0,Math.min(1,(ts-m.start)/m.duration));
+  player.px=m.sx+(m.ex-m.sx)*p;player.py=m.sy+(m.ey-m.sy)*p;player.frame=p<.5?1:2;drawField();
+  if(p<1)return;
+  motion=null;player.moving=false;player.frame=0;
+  // One completed tile, one encounter check. Never skip tiles after a long frame.
+  onEnterTile(m.c,m.r);
+  if(pendingFieldMenu){pendingFieldMenu=false;if(G.mode==="field")openMenu();}
+ }
+ if(G.mode!=="field")return;
+ if(held.length)startStep(held[held.length-1],ts);else interactLock=false;
+}
+
 function onEnterTile(c,r){ if(G.mode!=="field")return; const t=tileAt(c,r);
   if(t==="G"){ const area=MAPS[G.area]; if(area.wild.length && Math.random()<area.rate){
     const w=area.wild[rnd(area.wild.length-1)]; startWild(w.sp, randInt(w.min,w.max)); } } }
@@ -1023,13 +1047,13 @@ function interact(c,r){
 
 /* ---------- 会話（say） / 選択（ask） ---------- */
 let dlgQ=[], dlgWho="", dlgAfter=null, askActive=null;
-function say(who, lines, after){ dlgWho=who; dlgQ=(lines||[]).slice(); dlgAfter=after||null; askActive=null; G.mode="dialog"; el("fieldDialog").classList.add("on"); sayNext(); }
+function say(who, lines, after){ dlgWho=who; dlgQ=(lines||[]).slice(); dlgAfter=after||null; askActive=null; setMode("dialog"); el("fieldDialog").classList.add("on"); sayNext(); }
 function sayNext(){ const box=el("fieldDialog");
   if(!dlgQ.length){ box.classList.remove("on"); const a=dlgAfter; dlgAfter=null; if(a) a(); else { G.mode="field"; drawField(); } return; }
   const line=dlgQ.shift();
   box.innerHTML=(dlgWho?`<div class="who">${dlgWho}</div>`:"")+line+(dlgQ.length?' <span class="cursor">▼</span>':' <span class="cursor">■</span>'); }
 function ask(who, question, choices, cont){
-  G.mode="dialog"; const box=el("fieldDialog"); box.classList.add("on");
+  setMode("dialog"); const box=el("fieldDialog"); box.classList.add("on");
   box.innerHTML=(who?`<div class="who">${who}</div>`:"")+question+`<div id="askc" style="margin-top:6px;"></div>`;
   const wrap=el("askc");
   choices.forEach((c,i)=>{ const b=document.createElement("button"); b.className="bigBtn";
@@ -1086,9 +1110,9 @@ function makeLeveled(key, level){
 
 /* ---------- エリア遷移 ---------- */
 function doWarp(area, c, r, cont){
-  motionEpoch++; G.area=area; G.chapter=AREA_ORDER.indexOf(area)+1; player.moving=false; setAreaDims(); const st=(c!=null)?{c,r}:MAPS[area].start;
+  motionEpoch++; if(!G.flags["intro_"+area])advanceChapterParty(area); G.area=area; G.chapter=AREA_ORDER.indexOf(area)+1; player.moving=false; setAreaDims(); const st=(c!=null)?{c,r}:MAPS[area].start;
   player.c=st.c; player.r=st.r; player.px=st.c*TILE; player.py=st.r*TILE; player.dir="down"; player.frame=0;
-  held.length=0; interactLock=false; buildEntities(); setMode("field"); drawField();
+  clearDirections(); interactLock=false; buildEntities(); setMode("field"); drawField();
   playBGM("field");
   if(cont){ if(!G.flags["intro_"+area]){ enterArea(area, cont); } else cont(); }
   else if(!G.flags["intro_"+area]){ enterArea(area, null); }
@@ -1133,21 +1157,21 @@ function toggleBGM(){ G.bgmOn=!G.bgmOn; const b=el("bgmBtn"); if(b) b.textConten
 /* ============================================================
    画面遷移・結果・メニュー・詳細
    ============================================================ */
-function setMode(mode){ G.mode=mode; if(mode!=="field")held.length=0; if(mode!=="dialog")el("fieldDialog").classList.remove("on"); updateJourney();
+function setMode(mode){ G.mode=mode; if(mode!=="field")clearDirections(); if(mode!=="dialog")el("fieldDialog").classList.remove("on"); updateJourney();
   el("titleScr").classList.toggle("on",mode==="title");
   el("battleScr").classList.toggle("on",mode==="battle");
   el("menuScr").classList.toggle("on",mode==="menu");
   el("detailScr").classList.toggle("on",mode==="detail");
   el("resultScr").classList.toggle("on",mode==="gameover"||mode==="victory");
 }
-function gameOver(){ SC=null;B.storyWin=null;B.awaiting=null;B._pending=null;CM=null;held.length=0;player.moving=false;el("fieldDialog").classList.remove("on");setMode("gameover"); playBGM("field");
+function gameOver(){ SC=null;B.storyWin=null;B.awaiting=null;B._pending=null;CM=null;clearDirections();player.moving=false;el("fieldDialog").classList.remove("on");setMode("gameover"); playBGM("field");
   el("resultScr").innerHTML=`<h2 style="color:#e2543b">…ゆめを みていた？</h2>
     <p>みんな くたびれて ねむってしまった。<br>でも だいじょうぶ。ポケモンセンターで また げんきに なれる。</p>
     <button class="bigBtn" id="retryBtn" style="margin-top:14px;">かいふくして つづける</button>`;
   el("retryBtn").onclick=()=>{ if(G.mode!=="gameover")return; healParty(); const area=G.area; const st=MAPS[area].start; doWarp(area, st.c, st.r, null); };
 }
 
-function openMenu(){ if(G.mode!=="field")return; setMode("menu"); renderMenu(); }
+function openMenu(){ if(G.mode!=="field")return;if(player.moving){pendingFieldMenu=true;clearDirections();return;} setMode("menu"); renderMenu(); }
 function closeMenu(){ if(G.mode!=="menu")return; setMode("field"); saveGame();drawField(); }
 function renderMenu(){ renderJournal(); const pa=el("partyArea"); pa.innerHTML="";
   G.party.forEach((m,idx)=>{ const rat=m.hp/m.maxHp;
@@ -1215,17 +1239,18 @@ document.addEventListener("keydown",(e)=>{
   if(G.mode==="menu"){ if(k==="Escape"||k==="x"){ closeMenu(); e.preventDefault(); } return; }
   if(G.mode==="detail"){ if(k==="Escape"||k==="x"){ setMode("menu"); renderMenu(); e.preventDefault(); } return; }
   if(G.mode==="field"){
-    if(DIRK[k]){ pushDir(DIRK[k]); e.preventDefault(); }
+    if(DIRK[k]){ pushDir(DIRK[k],"key:"+k); e.preventDefault(); }
     else if(k==="Enter"||k==="z"){ interactFacing(); e.preventDefault(); }
     else if(k==="Escape"||k==="x"){ openMenu(); e.preventDefault(); }
   }
 });
-document.addEventListener("keyup",(e)=>{ const k=e.key.length===1?e.key.toLowerCase():e.key; if(DIRK[k]) popDir(DIRK[k]); });
+document.addEventListener("keyup",(e)=>{ const k=e.key.length===1?e.key.toLowerCase():e.key; if(DIRK[k]) popDir(DIRK[k],"key:"+k); });
 function bindHold(id,dir){ const b=el(id);
-  const dn=(e)=>{ e.preventDefault(); if(G.mode==="field") pushDir(dir); else if(G.mode==="battle"&&CM){ menuNav(dir==="left"?-1:dir==="right"?1:0,dir==="up"?-1:dir==="down"?1:0); } else if(G.mode==="dialog"&&askActive){ if(dir==="up")askNav(-1); else if(dir==="down")askNav(1); } };
-  const up=(e)=>{ e&&e.preventDefault(); popDir(dir); };
-  b.setAttribute("role","button"); b.setAttribute("aria-label",({up:"上",down:"下",left:"左",right:"右"})[dir]);
+  const dn=(e)=>{ e.preventDefault(); if(G.mode==="field") pushDir(dir,"pointer:"+e.pointerId); else if(G.mode==="battle"&&CM){ menuNav(dir==="left"?-1:dir==="right"?1:0,dir==="up"?-1:dir==="down"?1:0); } else if(G.mode==="dialog"&&askActive){ if(dir==="up")askNav(-1); else if(dir==="down")askNav(1); } };
+  const up=(e)=>{ e&&e.preventDefault(); popDir(dir,"pointer:"+e.pointerId); };
+  b.setAttribute("data-direction",dir);b.setAttribute("role","button"); b.setAttribute("aria-label",({up:"上",down:"下",left:"左",right:"右"})[dir]);
   b.addEventListener("pointerdown",e=>{b.setPointerCapture(e.pointerId);dn(e);});
+  b.addEventListener("pointermove",e=>{if(!b.hasPointerCapture(e.pointerId)||G.mode!=="field")return;const over=document.elementFromPoint(e.clientX,e.clientY)?.closest(".dbtn");const d=over?.getAttribute("data-direction");if(d)pushDir(d,"pointer:"+e.pointerId);else popDir(dir,"pointer:"+e.pointerId);});
   b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("lostpointercapture",up);
 }
 bindHold("dup","up"); bindHold("ddown","down"); bindHold("dleft","left"); bindHold("dright","right");
@@ -1246,7 +1271,7 @@ el("fieldDialog").addEventListener("click",(e)=>{ if(e.target.tagName==="BUTTON"
 function startGame(){ motionEpoch++;SC=null;B.awaiting=null;B.storyWin=null;B._pending=null;CM=null;askActive=null;player.moving=false; G.chapter=1; G.area="village"; G.flags={}; G.news={}; G.kotoriMet={}; G.bag={きずぐすり:3}; G.money=500; G.wins=0;
   initParty(); setAreaDims(); const st=MAPS.village.start;
   player.c=st.c; player.r=st.r; player.px=st.c*TILE; player.py=st.r*TILE; player.dir="down"; player.frame=0;
-  held.length=0; interactLock=false; buildEntities(); setMode("field"); playBGM("field"); drawField();
+  clearDirections(); interactLock=false; buildEntities(); setMode("field"); playBGM("field"); drawField();
   enterArea("village", null);
 }
 function continueGame(){ if(loadGame()){ /* ok */ } else startGame(); }
@@ -1697,10 +1722,10 @@ saveGame=function(){
 function validSave(text){try{const d=JSON.parse(text);return !!(d&&MAPS[d.area]&&Array.isArray(d.party)&&d.party.length>0&&d.party.length<=7&&d.party.every(m=>SPECIES[m.key]&&Number.isFinite(m.level)&&m.level>=1&&m.level<=100&&m.ivs&&["hp","atk","def","spd"].every(k=>Number.isFinite(m.ivs[k]))&&Number.isFinite(m.hp)&&Number.isFinite(m.maxHp)&&m.stats&&Array.isArray(m.moves)&&m.moves.length&&m.moves.every(v=>MOVES[v.name]&&Number.isFinite(v.pp)))&&(!d.player||(Number.isInteger(d.player.c)&&Number.isInteger(d.player.r)&&d.player.r>=0&&d.player.r<MAPS[d.area].map.length&&d.player.c>=0&&d.player.c<MAPS[d.area].map[d.player.r].length)));}catch(e){return false;}}
 loadGame=function(){
  try{let text=localStorage.getItem(SAVE_KEY);if(!validSave(text)){const backup=localStorage.getItem(SAVE_KEY+"_backup");if(!validSave(backup))return false;localStorage.setItem(SAVE_KEY,backup);saveNotice="前のきろくから 復元しました";}
-   motionEpoch++;SC=null;askActive=null;B.awaiting=null;B.storyWin=null;B._pending=null;player.moving=false;held.length=0;
+   motionEpoch++;SC=null;askActive=null;B.awaiting=null;B.storyWin=null;B._pending=null;player.moving=false;clearDirections();
    if(!rawLoad())return false;G.chapter=AREA_ORDER.indexOf(G.area)+1;
    const next=NEXT_AREA[G.area];if(G.flags["ch"+G.chapter+"_clear"]&&next&&!G.flags["intro_"+next])doWarp(next,null,null,null);
-   updateJourney();return true;
+   advanceChapterParty(G.area);updateJourney();return true;
  }catch(e){return false;}
 };
 continueGame=function(){if(!loadGame())window.alert("きろくを読みこめませんでした。はじめから遊ぶ場合は、はじめからを選んでください。");};
@@ -1709,25 +1734,53 @@ function renderJournal(){
  const i=AREA_ORDER.indexOf(G.area),n=G.party.length;
  el("journal").innerHTML=`<b>第${i+1}章 · ${MAPS[G.area].name}</b><br>${currentGoal()}<br>なかま ${n}/7 ／ ことり ${Object.keys(G.kotoriMet).filter(k=>G.kotoriMet[k]).length}/7 ／ 新聞 ${AREA_ORDER.filter(a=>G.flags["mamushi_"+a]).length}/7<br><small>勝利で控えにも経験値。属性・交代・回復を使い分けよう。</small><br><span id="saveNotice">${saveNotice}</span><div class="journal-actions"><button class="bigBtn sec" id="saveNow">きろくする</button><button class="bigBtn" id="musicNow">♪ ${G.bgmOn?"おん":"おふ"}</button><button class="bigBtn" id="supplyNow">きずぐすり購入 · 100えん</button>${G.flags["ch"+(i+1)+"_clear"]?'<button class="bigBtn" id="rematchNow">この地域で 再戦練習</button>':''}<button class="bigBtn sec" id="returnTitle">タイトルへ</button></div>`;
  el("saveNow").onclick=()=>{saveGame();el("saveNotice").textContent=saveNotice;};
+ const tip=document.createElement("p");tip.textContent=G.area==="pikapika"&&!G.flags.ch3_clear?"でんきには みずが苦手。メラメランを先頭にして育てよう。Lv18で じならしを覚えるよ。発電所の人にも話しかけよう。HPが減ったら 回復所へ。":"章を進めると 仲間も成長。草むらで育てると、さらに強くなり 新しい技を覚えるよ。HPが減ったら 回復所へ。";el("journal").appendChild(tip);
  el("musicNow").onclick=()=>{toggleBGM();renderJournal();};
  el("supplyNow").onclick=()=>{if(G.mode!=="menu")return;if(G.money<100){saveNotice="お金がたりません。再戦で報酬をもらえます";renderJournal();return;}G.money-=100;addItem("きずぐすり",1);saveGame();renderMenu();};
  if(G.flags["ch"+(i+1)+"_clear"])el("rematchNow").onclick=startRematch;
  el("returnTitle").onclick=()=>{if(!saveGame()){renderJournal();return;}setMode("title");ensureContinue();};
 }
 function ensureContinue(){if(!el("contBtn")){const b=document.createElement("button");b.id="contBtn";b.className="bigBtn sec";b.textContent="＞ つづきから";b.onclick=continueGame;el("startBtn").insertAdjacentElement("afterend",b);}}
+// Milestone rewards bridge the original level jumps without requiring long grinds.
+function advanceChapterParty(area){
+ const floor={village:5,alumina:8,pikapika:16,forest:24,volcano:32,port:40,ship:46}[area];let grew=false;
+ for(const mon of G.party){if(mon.level>=floor)continue;grew=true;mon.level=floor;
+  while(SPECIES[mon.key].evolvesTo&&mon.level>=SPECIES[mon.key].evolveLevel){mon.key=SPECIES[mon.key].evolvesTo;}
+  const sp=SPECIES[mon.key];mon.name=sp.name;mon.img=sp.img;mon.types=sp.types.slice();recalcStats(mon,true);
+  mon.moves=movesForLevel(sp,mon.level).map(name=>({name,pp:MOVES[name].pp,maxpp:MOVES[name].pp}));
+  mon.hp=mon.maxHp;mon.status=null;mon.confuse=0;
+ }
+ if(grew)saveNotice=`旅の経験で 仲間が成長！ Lv${floor}以上になりました`;
+}
 const REMATCH=[['ビリビリー'],['ビリペロリ'],['ビリビリー','ビリペロリ'],['ビリビリー','ビリペロリ'],['マグマイシ','マグマント'],['ビリペロリ','マグマイシ'],['ビリビリー','ボスビリペロリ']];
 function startRematch(){if(G.mode!=="menu")return;const idx=AREA_ORDER.indexOf(G.area);if(!G.flags["ch"+(idx+1)+"_clear"])return;
  const level=Math.min(75,Math.max([5,11,17,24,32,40,55][idx],Math.round(G.party.reduce((a,m)=>a+m.level,0)/G.party.length)));
  setMode("field");startBattleSpec({type:"trainer",name:MAPS[G.area].name+" 再戦練習",team:REMATCH[idx].map(sp=>({sp,lv:level})),storyWin:()=>{G.money+=100+idx*25;endBattle();saveGame();say("再戦練習",[`しょうり！ ${100+idx*25}えんを てにいれた。`]);}});
 }
-function fitField(){const rect=fcv.getBoundingClientRect();if(!rect.width||!rect.height)return;const scale=Math.max(.7,Math.min(1.65,rect.height/416));fcv.width=Math.round(rect.width/scale);fcv.height=Math.round(rect.height/scale);fx.imageSmoothingEnabled=false;drawField();}
-window.addEventListener("resize",fitField);if(window.visualViewport)window.visualViewport.addEventListener("resize",fitField);window.addEventListener("load",fitField);
-window.addEventListener("blur",()=>{held.length=0;});
-document.addEventListener("visibilitychange",()=>{held.length=0;if(document.hidden){if(G.mode==="field"&&!SC)saveGame();try{bgmEl&&bgmEl.pause();}catch(e){}}});
+function fitField(){const rect=fcv.getBoundingClientRect();if(!rect.width||!rect.height)return;const scale=Math.max(.7,Math.min(1.65,rect.height/416));const w=Math.round(rect.width/scale),h=Math.round(rect.height/scale);if(fcv.width!==w)fcv.width=w;if(fcv.height!==h)fcv.height=h;fx.imageSmoothingEnabled=false;drawField();}
+function syncViewport(){const vv=window.visualViewport;const height=vv&&Math.abs(vv.scale-1)<.01?vv.height:window.innerHeight;if(height>0)document.documentElement.style.setProperty("--game-height",height+"px");requestAnimationFrame(fitField);}
+window.addEventListener("resize",syncViewport);if(window.visualViewport)window.visualViewport.addEventListener("resize",syncViewport);window.addEventListener("load",syncViewport);
+window.addEventListener("orientationchange",()=>{clearDirections();syncViewport();setTimeout(syncViewport,150);setTimeout(syncViewport,350);});
+document.addEventListener("fullscreenchange",syncViewport);
+if(typeof ResizeObserver!=="undefined")new ResizeObserver(fitField).observe(fcv.parentElement);
+el("displayBtn").onclick=async()=>{
+ const app=el("app");
+ try{if(!document.fullscreenElement&&app.requestFullscreen)await app.requestFullscreen();else if(document.fullscreenElement&&document.exitFullscreen)await document.exitFullscreen();}catch(e){/* Safari may not offer element fullscreen; rotation still uses the whole viewport. */}
+ syncViewport();
+ const wide=window.matchMedia("(orientation:landscape)").matches;
+ window.alert(wide?"横画面の配置です。左右のボタンで操作できます。ブラウザの全画面に対応している場合は、画面いっぱいに表示します。":"iPhoneを横に持って遊んでください。横長になると操作ボタンが左右に移ります。向きが変わらない場合は、端末の画面回転設定と、Safariで開いているかを確認してください。このボタンだけで端末の向きを強制することはできません。");
+};
+window.addEventListener("blur",clearDirections);
+document.addEventListener("visibilitychange",()=>{clearDirections();if(document.hidden){if(G.mode==="field"&&!SC)saveGame();try{bgmEl&&bgmEl.pause();}catch(e){}}});
 // One reusable media element is unlocked by a real gesture; both tracks keep the original audio.
 function unlockAudio(){if(G.bgmOn)playBGM(G.mode==="battle"?"battle":"field");}
 document.addEventListener("pointerdown",unlockAudio,{capture:true});document.addEventListener("keydown",unlockAudio,{capture:true});
 updateJourney();
+// Prevent accidental game zoom while retaining one-finger scrolling in menus.
+const gameRoot=el("app");
+for(const name of ["gesturestart","gesturechange"])gameRoot.addEventListener(name,e=>e.preventDefault(),{passive:false});
+for(const name of ["touchstart","touchmove"])gameRoot.addEventListener(name,e=>{if(e.touches.length>1)e.preventDefault();},{passive:false});
+gameRoot.addEventListener("dblclick",e=>e.preventDefault(),{passive:false});
 window.addEventListener("load",()=>{try{if(localStorage.getItem(SAVE_KEY+"_previous_adventure")){const b=document.createElement("button");b.className="bigBtn sec";b.textContent="前の冒険を もどす";b.onclick=()=>{const prev=localStorage.getItem(SAVE_KEY+"_previous_adventure");if(!validSave(prev)){window.alert("前のきろくを読みこめませんでした");return;}if(!window.confirm("前の冒険にもどしますか？ 今のきろくはバックアップします。"))return;const now=localStorage.getItem(SAVE_KEY);if(validSave(now))localStorage.setItem(SAVE_KEY+"_previous_adventure",now);localStorage.setItem(SAVE_KEY,prev);continueGame();};el("titleScr").appendChild(b);}}catch(e){}});
 
 </script>
