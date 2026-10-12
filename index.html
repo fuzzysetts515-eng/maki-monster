@@ -1255,7 +1255,7 @@ function boot(){ el("titleImg").src=ASSETS["maki_front"]||""; setMode("title");
   if(hasSave()){ const b=document.createElement("button"); b.className="bigBtn sec"; b.id="contBtn"; b.style.marginTop="8px"; b.textContent="＞ つづきから"; b.onclick=continueGame;
     el("startBtn").insertAdjacentElement("afterend", b); }
   // BGMトグル
-  const bg=document.createElement("button"); bg.className="bigBtn"; bg.id="bgmBtn"; bg.style.cssText="margin-top:8px;font-size:12px;padding:6px 10px;"; bg.textContent="♪ おん"; bg.onclick=toggleBGM;
+  const bg=document.createElement("button"); bg.className="bigBtn"; bg.id="bgmBtn"; bg.style.cssText="margin-top:8px;font-size:12px;padding:6px 10px;"; bg.textContent=G.bgmOn?"♪ おん":"♪ おふ"; bg.onclick=toggleBGM;
   el("titleScr").appendChild(bg);
   requestAnimationFrame(movementLoop);
 }
@@ -1676,6 +1676,11 @@ function creditsScreen(allKotori){
 
 
 /* Local-only improvements. Original chapter dialogue remains above. */
+// Device preference is separate from adventure saves and survives new games.
+const AUDIO_PREF_KEY="maki_monster_audio_v1";
+try{const value=localStorage.getItem(AUDIO_PREF_KEY);G.bgmOn=value===null?true:value==="on";}catch(e){G.bgmOn=false;}
+const toggleSessionBGM=toggleBGM;
+toggleBGM=function(){toggleSessionBGM();try{localStorage.setItem(AUDIO_PREF_KEY,G.bgmOn?"on":"off");}catch(e){/* Retain the in-session preference when storage is unavailable. */}};
 const JOURNEY_GOALS=["南の草むらの メラメランを たすけよう","センター前の キラーに はなしかけよう","発電所を調べて スプーンに いどもう","森の フォークと いたずらの なぞを解こう","火山で マグマントと 力くらべ","港の灯台で ナイフに いどもう","船の うずしおを しらべよう"];
 function currentGoal(){if(G.flags.ch7_clear)return "クリア！ ことり・新聞の記録と 再戦を楽しもう";if(G.area==="ship"&&G.flags.ch7_kyoubutsu)return "船の奥の カイザ船長に はなしかけよう";return JOURNEY_GOALS[AREA_ORDER.indexOf(G.area)];}
 function updateJourney(){const box=el("journey");if(!box)return;box.textContent=G.mode==="title"?"7つの町をめぐる物語 ／ 横向きでも遊べます":`第${AREA_ORDER.indexOf(G.area)+1}章 · ${MAPS[G.area].name}　${currentGoal()}`;}
